@@ -123,6 +123,10 @@ if not %NODE_VERSION:~0,1% == v if not %NODE_VERSION:~0,1% == l (
   set NODE_VERSION=v%NODE_VERSION%
 )
 
+for /f "tokens=1,* delims=." %%a in ("%NODE_VERSION:~1%") do (
+  set NODE_MAJOR_VERSION=%%a
+)
+
 if %NODE_TYPE% == iojs (
   set DIST_URL=%%
   if %ARCH% == x32 (
@@ -131,10 +135,18 @@ if %NODE_TYPE% == iojs (
     set NODE_EXE_URL=%NVMW_IOJS_ORG_MIRROR%/%NODE_VERSION%/win-x64/iojs.exe
   )
 ) else (
-  if %ARCH% == x32 (
-    set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/node.exe
+  if %NODE_MAJOR_VERSION% lss 1 (
+    if %ARCH% == x32 (
+      set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/node.exe
+    ) else (
+      set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/x64/node.exe
+    )
   ) else (
-    set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/x64/node.exe
+    if %ARCH% == x32 (
+      set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/win-x86/node.exe
+    ) else (
+      set NODE_EXE_URL=%NVMW_NODEJS_ORG_MIRROR%/%NODE_VERSION%/win-x64/node.exe
+    )
   )
 )
 

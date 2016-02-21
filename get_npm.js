@@ -3,7 +3,6 @@ var util = require('util'),
     path = require('path'),
     wget = require('./wget');
 
-var NPM_PKG_JSON_URL = 'https://raw.githubusercontent.com/%s/%s/deps/npm/package.json';
 // https://github.com/npm/npm/tags
 var NVMW_NPM_MIRROR = process.env.NVMW_NPM_MIRROR || 'https://github.com/npm/npm/archive';
 var BASE_URL = NVMW_NPM_MIRROR + '/v%s.zip';
@@ -16,7 +15,15 @@ var binVersion = versions[1];
 if (binType === 'iojs') {
   // detect npm version from https://iojs.org/dist/index.json
   var NVMW_IOJS_ORG_MIRROR = process.env.NVMW_IOJS_ORG_MIRROR || 'https://iojs.org/dist';
-  var pkgUri = NVMW_IOJS_ORG_MIRROR + '/index.json';
+  processNewNodeAndIojs(NVMW_IOJS_ORG_MIRROR);
+} else {
+  // detect npm version from https://nodejs.org/dist/index.json
+  var NVMW_NODEJS_ORG_MIRROR = process.env.NVMW_NODEJS_ORG_MIRROR || 'https://nodejs.org/dist';
+  processNewNodeAndIojs(NVMW_NODEJS_ORG_MIRROR);
+}
+
+function processNewNodeAndIojs(mirror) {
+  var pkgUri = mirror + '/index.json';
   wget(pkgUri, function (filename, content) {
     if (filename === null) {
       return noNpmAndExit();
@@ -39,15 +46,6 @@ if (binType === 'iojs') {
       return noNpmAndExit();
     }
     downloadNpmZip(npmVersion);
-  });
-} else {
-  var pkgUri = util.format(NPM_PKG_JSON_URL, 'joyent/node',
-    binVersion === 'latest' ? 'master' : binVersion);
-  wget(pkgUri, function (filename, pkg) {
-    if (filename === null) {
-      return noNpmAndExit();
-    }
-    downloadNpmZip(JSON.parse(pkg).version);
   });
 }
 
